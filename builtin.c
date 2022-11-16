@@ -1,47 +1,132 @@
 #include "shell.h"
 
 /**
- * _myexit - exits the shell
+ * _myexit - display the history list
  *
  * @info: structure containing the arguments
  *
- * Return: exists with a given exit status
+ * Return: Always 0
  */
-int _myexit(info_t *info)
-{
-	int exitcheck;
 
-	if (info->argv[1])
-	{
-		exitcheck = erratio(info->argv[1]);
-		if (exitcheck == -1)
-		{
-			info->status = 2;
-			print_error(info, "Illegal number: ");
-			_eputs(info->argv[1]);
-			_eputchar('\n');
-			return (1);
-		}
-		info->err_num = _erratoi(info->argv[1]);
-		return (-2);
-	}
-	info->err_num = -1;
-	return (-2);
+int _myhistory(info_t *info)
+{
+	print_list(info->history);
+	return (0);
 }
+
 /**
- * _mycd - changes the current directory of the process
- * 
- * @info: structure containing potential argument
+ * unset_alias - sets alias to a string
  *
- * Return: always 0
+ * @info: parameter struct
+ *
+ * @str: the sdtring alias
+ *
+ * Return: 0
  */
-int _mycd(info_t *info)
+int unset_alias(info_t *info, char *str)
 {
-	char *s; *dir, buffer[1024];
-	int chdir_ret;
+	char *p, c;
+	int ret;
 
-	s = getcwd(buffer, 1024);
-	if (!s)
+	p = _strchr(str, '=');
+	if (!p)
 	{
-		_puts{
+		return (1);
+	}
+	c = *p;
+	*p = 0;
+	ret = delete_node_at_index(&(info->alias);
+			get_node_index(info->alias, node_starts_with(info->alias, str, -1)));
+	*p = c;
+	return (ret);
+}
 
+/**
+ * set_alias - set alias to string
+ *
+ * @info: parameter struct
+ *
+ * @str: the string alias
+ *
+ * Return: 0
+ */
+int set_alias(info_t *info, char *str)
+{
+	char *p;
+
+	p = _strchr(str, '=');
+	if (!p)
+	{
+		return (1);
+	}
+	if (!*++p)
+	{
+		return (unset_alias(info, str));
+	}
+	unset_alias(info, str);
+	return (add_node_end(&(info->alias), str, 0) == NULL);
+}
+
+/**
+ * print_alias - prints an alias string
+ *
+ * @node:the alias mode
+ *
+ * Return: 0
+ */
+int print_alias(list_t *node)
+{
+	char *p = NULL, *a = NULL;
+
+	if (node)
+	{
+		p = _strchr(node->str, '=');
+		for (a = node->str; a <= p; a++)
+		{
+			_putchar(*a);
+		}
+		_putchar('\'');
+		_puts(p + 1);
+		_puts("'\n");
+		return (0);
+	}
+	return (1);
+}
+
+/**
+ * _myalias - mimics the alias buitin
+ *
+ * @info: structure containing arguments
+ *
+ * Return: 0
+ */
+int _myalias(info_t *info)
+{
+	int i = 0;
+	char *p = NULL;
+	list_t *node = NULL;
+
+	if (info->argc == 1)
+	{
+		node = info->alias;
+		while (node)
+		{
+			print_alias(node);
+			node = node->next;
+		}
+		return (0);
+	}
+	for (i = 1; info->argv[i]; i++)
+	{
+		p = _strchr(info->argv[i], '=');
+		if (p)
+		{
+			set_alias(info, info->argv[i]);
+		}
+		else
+		{
+			print_alias(node_starts_with(info->alias, info->argv[i], '='));
+		}
+	}
+	return (0);
+}
