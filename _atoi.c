@@ -77,7 +77,7 @@ int _atoi(char *s)
 		}
 		else if (flag == 1)
 		{
-			flsg = 2;
+			flag = 2;
 		}
 	}
 	if (sign == -1)
